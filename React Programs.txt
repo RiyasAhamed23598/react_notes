@@ -4555,7 +4555,9 @@ Program-100  Portals
 	import ReactDOM from 'react-dom';
 	const styles = {
 		overlay: {
-			display: 'flex', justifyContent: 'Center', alignItems: 'center',
+			position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+			backgroundColor: "rgba(0, 0, 0, 0.5)",
+			display: "flex", justifyContent: "center", alignItems: "center"
 		},
 		modal: {
 			background: '#fff', padding: '20px', borderRadius: '5px'
@@ -4590,3 +4592,103 @@ Program-100  Portals
 	}
 	export default App;
 
+
+
+Jest Unit Testing
+==================
+import { render, screen, waitFor } from '@testing-library/react';
+import UserList from '../components/users/UserList';
+const MockUserList = [
+    {
+        id: 1, userName: 'sanjay_kumar', name: 'sanjay',
+        email: 'sanjay@gmail.com', phone: 1234512345,
+        address: { city: 'bangalore' }
+    }
+]
+// Mock fetch()
+beforeEach(() => {
+    global.fetch = jest.fn(() => {
+        return Promise.resolve({
+            json: () => Promise.resolve(MockUserList)
+        })
+    });
+})
+afterEach(() => {
+    jest.clearAllMocks();
+});
+describe('Test Suite For Http Demo 2 Component', () => {
+    it('Lets Verify fetchUser functionality', async () => {
+        render(<UserList />);
+        // wait for user data to be displayed on the screen
+        await waitFor(() => {
+            expect(screen.getByText('sanjay')).toBeInTheDocument();
+        });
+        expect(global.fetch).toHaveBeenCalledWith('https://jsonplaceholder.typicode.com/users');
+    })
+})
+
+
+Unit Testing Axios Code
+========================
+// UserService.js
+import axios from "axios";
+const API = "/api/users";
+export const getUsers = () => axios.get(API);
+export const createUser = (user) => axios.post(API, user);
+export const updateUser = (id, user) => axios.put(`${API}/${id}`, user);
+export const deleteUser = (id) => axios.delete(`${API}/${id}`);
+
+-----------------------------------------------
+
+import axios from "axios";
+import * as UserService from "./UserService";
+
+// Automatically mock axios
+jest.mock("axios");
+
+describe("UserService API calls", () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test("getUsers should fetch users", async () => {
+    const mockData = [{ id: 1, name: "Alice" }];
+    axios.get.mockResolvedValueOnce({ data: mockData });
+
+    const response = await UserService.getUsers();
+    expect(response.data).toEqual(mockData);
+    expect(axios.get).toHaveBeenCalledWith("/api/users");
+  });
+
+  test("createUser should post user data", async () => {
+    const newUser = { name: "Bob" };
+    axios.post.mockResolvedValueOnce({ data: { id: 2, ...newUser } });
+
+    const response = await UserService.createUser(newUser);
+    expect(response.data).toEqual({ id: 2, name: "Bob" });
+    expect(axios.post).toHaveBeenCalledWith("/api/users", newUser);
+  });
+
+  test("updateUser should send updated data", async () => {
+    const updatedUser = { name: "Updated Alice" };
+    axios.put.mockResolvedValueOnce({ data: updatedUser });
+
+    const response = await UserService.updateUser(1, updatedUser);
+    expect(response.data).toEqual(updatedUser);
+    expect(axios.put).toHaveBeenCalledWith("/api/users/1", updatedUser);
+  });
+
+  test("deleteUser should send delete request", async () => {
+    axios.delete.mockResolvedValueOnce({ status: 204 });
+
+    const response = await UserService.deleteUser(1);
+    expect(response.status).toBe(204);
+    expect(axios.delete).toHaveBeenCalledWith("/api/users/1");
+  });
+  
+  test("getUsers should handle errors", async () => {
+	  axios.get.mockRejectedValueOnce(new Error("Network error"));
+	  await expect(UserService.getUsers()).rejects.toThrow("Network error");
+  });
+
+});

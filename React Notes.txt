@@ -2132,11 +2132,9 @@ import { createPortal } from 'react-dom';
 
 Build and Deploy React App
 ==========================
--Building an application means creating identifiable software assembly from 
- source code which someone can use.
--Deploying an application refers to making the application accessible to 
- the world through internet.
--"npm run build" creates a build directory with a production build of our app. 
+-Building an application means creating identifiable software assembly from source code which someone can use.
+-Deploying an application refers to making the application accessible to the world through internet.
+-"npm run build" creates a 'build' directory with a production build of our app. 
 
   https://cra.link/deployment
 
@@ -2165,6 +2163,7 @@ Deploy Application in Server
 -Netlify
 -Heroku
 -Vercel
+-Hostinger
 
 
 Deploy React in GitHub
@@ -2238,10 +2237,34 @@ ESLint
 -ESLint is a static code analysis tool for identifying problematic patterns found in JavaScript code.
 
 1. npm i eslint -g
-2. npm init @eslint/config   
+2. npm init @eslint/config@latest   
          (OR) 
    npx eslint --init
-3. eslint .
+	
+3. eslint . --config eslint.config.mjs
+
+// eslint.config.mjs from step-2
+import js from '@eslint/js';
+import globals from 'globals';
+export default [
+  {
+    files: ['**/*.js', '**/*.jsx'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: {
+        ...globals.browser,
+        ...globals.node
+      }
+    },
+    plugins: {},
+    rules: {
+      'no-unused-vars': 'warn',
+      'no-console': 'error',
+      'no-debugger': 'error'
+    }
+  },
+];
 
 
 
@@ -2615,6 +2638,9 @@ beforeEach()      - Before Each Test case    (n)
 afterEach()		  - After Each Test case     (n)
 afterAll()        - After all the testcases  (1)
 
+
+describe.skip() - skip this test suite and execute other test suites
+describe.only() - execute only this test suite and don't execute other test suites
 it.skip()    - skips this test case, executes other test cases
 it.only()    - executes only this test case, skips other testcases
 
